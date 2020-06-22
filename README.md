@@ -14,15 +14,15 @@ I've made this OpenAPI PoC, which meets the following requirements:
 
 Swagger UI looks like this...
 
-![](res/DemoScreen1.jpg)
+![](res/DemoScreen01.jpg)
 
-Pay-in money example:
+Pay in money example:
 
-![](res/DemoScreen2.jpg)
+![](res/DemoScreen02.jpg)
 
 Result ...
 
-![](res/DemoScreen3.jpg)
+![](res/DemoScreen03.jpg)
 
 ## Existing Players
 ** Since this is a demo version, all data are stored in memory. Existing players are:
