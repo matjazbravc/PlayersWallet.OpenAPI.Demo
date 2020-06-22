@@ -16,6 +16,14 @@ Swagger UI looks like this...
 
 ![](res/DemoScreen1.jpg)
 
+Pay-in money example:
+
+![](res/DemoScreen2.jpg)
+
+Result ...
+
+![](res/DemoScreen3.jpg)
+
 ## Existing Players
 ** Since this is a demo version, all data are stored in memory. Existing players are:
 ```json
