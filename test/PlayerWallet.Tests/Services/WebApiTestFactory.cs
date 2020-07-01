@@ -41,7 +41,6 @@ namespace PlayersWallet.Tests.Services
         {
             builder
                 .UseContentRoot(".") // Content root directory for web host
-                .UseStartup<TestStartup>()
                 .UseTestServer()
                 .UseEnvironment("Test")
                 .ConfigureTestServices(services =>
