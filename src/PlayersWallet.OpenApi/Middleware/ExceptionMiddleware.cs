@@ -1,7 +1,9 @@
-﻿using PlayersWallet.OpenApi.Errors;
-using Microsoft.AspNetCore.Http;
+﻿using Microsoft.AspNetCore.Http;
+using PlayersWallet.OpenApi.Errors;
+using PlayersWallet.Persistence.Exceptions;
 using Serilog;
 using System.Net;
+using System.Security.Authentication;
 using System.Threading.Tasks;
 using System;
 
@@ -11,7 +13,7 @@ namespace PlayersWallet.OpenApi.Middleware
     public class ExceptionMiddleware
     {
         private readonly RequestDelegate _next;
-        
+
         public ExceptionMiddleware(RequestDelegate next)
         {
             _next = next;
@@ -25,22 +27,38 @@ namespace PlayersWallet.OpenApi.Middleware
             }
             catch (Exception ex)
             {
-                var errorMsg = $"path: {httpContext.Request.Path}, {ex.Message}";
-                Log.Error(errorMsg);
                 await HandleExceptionAsync(httpContext, ex).ConfigureAwait(false);
             }
         }
 
-        private Task HandleExceptionAsync(HttpContext httpContext, Exception ex)
+        private async Task HandleExceptionAsync(HttpContext context, Exception ex)
         {
-            httpContext.Response.ContentType = "application/json";
-            httpContext.Response.StatusCode = (int)HttpStatusCode.InternalServerError;
+            Log.Error($"path: {context.Request.Path}, {ex.Message}");
+            context.Response.ContentType = "application/json";
+            context.Response.StatusCode = (int)GetStatusCode(ex);
             var errorMsg = ex.Message;
             if (ex.InnerException != null && !string.IsNullOrWhiteSpace(ex.InnerException.Message))
             {
                 errorMsg = ex.InnerException.Message;
             }
-            return httpContext.Response.WriteAsync(new ApiError(httpContext.Response.StatusCode, errorMsg).ToString());
+            await context.Response.WriteAsync(new ApiError(context.Response.StatusCode, errorMsg).ToString()).ConfigureAwait(false);
+        }
+
+        private static HttpStatusCode GetStatusCode(Exception ex)
+        {
+            switch (ex)
+            {
+                case RepositoryNotFoundException _:
+                    return HttpStatusCode.NotFound;
+                case FormatException _:
+                    return HttpStatusCode.BadRequest;
+                case AuthenticationException _:
+                    return HttpStatusCode.Forbidden;
+                case NotImplementedException _:
+                    return HttpStatusCode.NotImplemented;
+                default:
+                    return HttpStatusCode.InternalServerError;
+            }
         }
     }
 }

@@ -1,13 +1,14 @@
 ﻿using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
 using PlayersWallet.Contracts.Entities;
 using PlayersWallet.Persistence.DbContexts;
+using PlayersWallet.Persistence.Exceptions;
 using System.Collections.Generic;
 using System.Linq.Expressions;
 using System.Linq;
 using System.Threading.Tasks;
 using System.Threading;
 using System;
-using Microsoft.Extensions.Logging;
 
 namespace PlayersWallet.Persistence.Repositories
 {
@@ -21,45 +22,40 @@ namespace PlayersWallet.Persistence.Repositories
             _logger = logger;
         }
 
-        public override async Task<Player> GetSingleAsync(Expression<Func<Player, bool>> predicate, bool disableTracking = true, CancellationToken cancellationToken = default(CancellationToken))
+        public async Task<Player> GetAsync(int playerId)
         {
-            Player result = null;
-            try
+            var result = await GetSingleAsync(pl => pl.PlayerId == playerId).ConfigureAwait(false);
+            if (result == null)
             {
-                result = await DatabaseSet
-                    .Include(pl => pl.Transactions)
-                    .AsNoTracking()
-                    .SingleOrDefaultAsync(predicate, cancellationToken).ConfigureAwait(false);
-                return result;
+                throw new RepositoryNotFoundException($"The player with Id {playerId} was not found");
             }
-            catch (Exception ex)
-            {
-                _logger.Log(LogLevel.Error, ex, "Error when trying to get single Player.");
-                return result;
-            }
+            return result;
         }
 
-        public override async Task<IList<Player>> GetAllAsync(bool disableTracking = true, CancellationToken cancellationToken = default(CancellationToken))
+        public override async Task<Player> GetSingleAsync(Expression<Func<Player, bool>> predicate, bool disableTracking = true, CancellationToken cancellationToken = default)
         {
-            var result = new List<Player>();
             IQueryable<Player> query = DatabaseSet;
-            try
+            if (disableTracking)
             {
-                if (disableTracking)
-                {
-                    query = query.AsNoTracking();
-                }
-                result = await query
-                    .Include(pl => pl.Transactions)
-                    .AsNoTracking()
-                    .ToListAsync(cancellationToken).ConfigureAwait(false);
-                return result;
+                query = query.AsNoTracking();
             }
-            catch (Exception ex)
+            var result = await query
+                .Include(pl => pl.Transactions)
+                .SingleOrDefaultAsync(predicate, cancellationToken).ConfigureAwait(false);
+            return result;
+        }
+
+        public override async Task<IList<Player>> GetAllAsync(bool disableTracking = true, CancellationToken cancellationToken = default)
+        {
+            IQueryable<Player> query = DatabaseSet;
+            if (disableTracking)
             {
-                _logger.Log(LogLevel.Error, ex, "Error when trying to get list of all Players.");
-                return result;
+                query = query.AsNoTracking();
             }
+            var result = await query
+                .Include(pl => pl.Transactions)
+                .ToListAsync(cancellationToken).ConfigureAwait(false);
+            return result;
         }
     }
 }

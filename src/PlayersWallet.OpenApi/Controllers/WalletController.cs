@@ -45,14 +45,7 @@ namespace PlayersWallet.OpenApi.Controllers
         public async Task<IActionResult> GetBalanceAsync(int playerId)
         {
             Logger.LogDebug(nameof(GetBalanceAsync));
-
-            // Get Player if exists
-            var player = await _playerRepository.GetSingleAsync(pl => pl.PlayerId == playerId).ConfigureAwait(false);
-            if (player == null)
-            {
-                return NotFound(new NotFoundError($"The player with Id {playerId} was not found"));
-            }
-
+            var player = await _playerRepository.GetAsync(playerId).ConfigureAwait(false);
             var result = new BalanceResponse
             {
                 PlayerId = playerId,
@@ -76,14 +69,7 @@ namespace PlayersWallet.OpenApi.Controllers
         public async Task<ActionResult<IEnumerable<Transaction>>> GetTransactionsAsync(int playerId)
         {
             Logger.LogDebug(nameof(GetTransactionsAsync));
-
-            // Get Player if exists
-            var player = await _playerRepository.GetSingleAsync(pl => pl.PlayerId == playerId).ConfigureAwait(false);
-            if (player == null)
-            {
-                return NotFound(new NotFoundError($"The player with Id {playerId} was not found"));
-            }
-
+            var player = await _playerRepository.GetAsync(playerId).ConfigureAwait(false);
             return Ok(player.Transactions.OrderByDescending(x => x.CreatedDate));
         }
 
@@ -103,18 +89,14 @@ namespace PlayersWallet.OpenApi.Controllers
         {
             Logger.LogDebug(nameof(BetAsync));
 
-            // Validate request
+            // Validate model
             if (!ModelState.IsValid)
             {
                 return BadRequest(ModelState);
             }
 
             // Get Player if exists
-            var player = await _playerRepository.GetSingleAsync(pl => pl.PlayerId == request.PlayerId).ConfigureAwait(false);
-            if (player == null)
-            {
-                return NotFound(new NotFoundError($"The Player with Id {request.PlayerId} was not found"));
-            }
+            var player = await _playerRepository.GetAsync(request.PlayerId).ConfigureAwait(false);
 
             // Check Player's Balance
             if (player.Balance - request.Bet < 0)
@@ -133,7 +115,7 @@ namespace PlayersWallet.OpenApi.Controllers
             await _transactionRepository.AddAsync(transaction).ConfigureAwait(false);
 
             // Re-read Player
-            player = await _playerRepository.GetSingleAsync(pl => pl.PlayerId == request.PlayerId).ConfigureAwait(false);
+            player = await _playerRepository.GetAsync(request.PlayerId).ConfigureAwait(false);
             return Ok(player);
         }
 
@@ -152,18 +134,14 @@ namespace PlayersWallet.OpenApi.Controllers
         {
             Logger.LogDebug(nameof(PayInAsync));
 
-            // Validate request
+            // Validate model
             if (!ModelState.IsValid)
             {
                 return BadRequest(ModelState);
             }
 
             // Get Player if exists
-            var player = await _playerRepository.GetSingleAsync(pl => pl.PlayerId == request.PlayerId).ConfigureAwait(false);
-            if (player == null)
-            {
-                return NotFound(new NotFoundError($"The player with Id {request.PlayerId} was not found"));
-            }
+            var player = await _playerRepository.GetAsync(request.PlayerId).ConfigureAwait(false);
 
             // Create new transaction
             var transaction = new Transaction
@@ -176,7 +154,7 @@ namespace PlayersWallet.OpenApi.Controllers
             await _transactionRepository.AddAsync(transaction).ConfigureAwait(false);
 
             // Re-read Player
-            player = await _playerRepository.GetSingleAsync(pl => pl.PlayerId == request.PlayerId).ConfigureAwait(false);
+            player = await _playerRepository.GetAsync(request.PlayerId).ConfigureAwait(false);
             return Ok(player);
         }
 
@@ -196,18 +174,14 @@ namespace PlayersWallet.OpenApi.Controllers
         {
             Logger.LogDebug(nameof(WinAsync));
 
-            // Validate request
+            // Validate model
             if (!ModelState.IsValid)
             {
                 return BadRequest(ModelState);
             }
 
             // Get Player if exists
-            var player = await _playerRepository.GetSingleAsync(pl => pl.PlayerId == request.PlayerId).ConfigureAwait(false);
-            if (player == null)
-            {
-                return NotFound(new NotFoundError($"The player with Id {request.PlayerId} was not found"));
-            }
+            var player = await _playerRepository.GetAsync(request.PlayerId).ConfigureAwait(false);
 
             // Create new transaction
             var transaction = new Transaction
@@ -220,7 +194,7 @@ namespace PlayersWallet.OpenApi.Controllers
             await _transactionRepository.AddAsync(transaction).ConfigureAwait(false);
 
             // Re-read Player
-            player = await _playerRepository.GetSingleAsync(pl => pl.PlayerId == request.PlayerId).ConfigureAwait(false);
+            player = await _playerRepository.GetAsync(request.PlayerId).ConfigureAwait(false);
             return Ok(player);
         }
 
@@ -237,7 +211,6 @@ namespace PlayersWallet.OpenApi.Controllers
         public async Task<ActionResult<IEnumerable<Player>>> GetPlayersAsync()
         {
             Logger.LogDebug(nameof(GetPlayersAsync));
-
             var result = await _playerRepository.GetAllAsync().ConfigureAwait(false);
             return Ok(result);
         }
