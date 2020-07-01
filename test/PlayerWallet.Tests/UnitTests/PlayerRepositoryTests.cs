@@ -1,5 +1,4 @@
 ﻿using System.Threading.Tasks;
-using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using PlayersWallet.Persistence.Repositories;
 using PlayersWallet.Tests.Services;
@@ -18,8 +17,8 @@ namespace PlayersWallet.Tests.UnitTests
         public PlayerRepositoryTests(WebApiTestFactory factory)
         {
             _factory = factory;
-            _logger = _factory.Services.GetRequiredService<ILogger<WebApiTestFactory>>();
-            _playerRepository = factory.Services.GetRequiredService<IPlayerRepository>();
+            _logger = _factory.GetRequiredService<ILogger<WebApiTestFactory>>();
+            _playerRepository = factory.GetRequiredService<IPlayerRepository>();
         }
 
         [Fact]

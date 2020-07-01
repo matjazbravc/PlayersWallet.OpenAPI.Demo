@@ -1,5 +1,4 @@
 ﻿using System.Threading.Tasks;
-using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using PlayersWallet.Persistence.Repositories;
 using PlayersWallet.Tests.Services;
@@ -18,8 +17,8 @@ namespace PlayersWallet.Tests.UnitTests
         public TransactionRepositorsTests(WebApiTestFactory factory)
         {
             _factory = factory;
-            _logger = _factory.Services.GetRequiredService<ILogger<WebApiTestFactory>>();
-            _transactionRepository = factory.Services.GetRequiredService<ITransactionRepository>();
+            _logger = _factory.GetRequiredService<ILogger<WebApiTestFactory>>();
+            _transactionRepository = factory.GetRequiredService<ITransactionRepository>();
         }
 
         [Fact]

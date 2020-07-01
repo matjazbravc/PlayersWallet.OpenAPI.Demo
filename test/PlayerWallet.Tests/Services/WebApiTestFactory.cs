@@ -5,9 +5,9 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
-using PlayersWallet.Persistence.DbContexts;
 using PlayersWallet.OpenApi.Data;
 using PlayersWallet.OpenApi;
+using PlayersWallet.Persistence.DbContexts;
 using System.Linq;
 using System;
 
@@ -16,12 +16,32 @@ namespace PlayersWallet.Tests.Services
     /// <summary>
     /// Customized WebApplicationFactory
     /// </summary>
-    public class WebApiTestFactory : WebApplicationFactory<Startup>
+    public class WebApiTestFactory : WebApplicationFactory<TestStartup>
     {
+        public TService GetRequiredService<TService>()
+        {
+            if (Server == null)
+            {
+                CreateDefaultClient();
+            }
+            return Server.Host.Services.GetRequiredService<TService>();
+        }
+
+        protected override IWebHostBuilder CreateWebHostBuilder()
+        {
+            var hostBuilder = new WebHostBuilder();
+            hostBuilder.ConfigureAppConfiguration((context, b) =>
+            {
+                context.HostingEnvironment.ApplicationName = typeof(Program).Assembly.GetName().Name;
+            });
+            return hostBuilder.UseStartup<TestStartup>();
+        }
+
         protected override void ConfigureWebHost(IWebHostBuilder builder)
         {
             builder
                 .UseContentRoot(".") // Content root directory for web host
+                .UseStartup<TestStartup>()
                 .UseTestServer()
                 .UseEnvironment("Test")
                 .ConfigureTestServices(services =>
