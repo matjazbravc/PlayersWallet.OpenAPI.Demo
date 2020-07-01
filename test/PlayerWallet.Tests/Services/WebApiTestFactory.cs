@@ -27,16 +27,6 @@ namespace PlayersWallet.Tests.Services
             return Server.Host.Services.GetRequiredService<TService>();
         }
 
-        protected override IWebHostBuilder CreateWebHostBuilder()
-        {
-            var hostBuilder = new WebHostBuilder();
-            hostBuilder.ConfigureAppConfiguration((context, b) =>
-            {
-                context.HostingEnvironment.ApplicationName = typeof(Program).Assembly.GetName().Name;
-            });
-            return hostBuilder.UseStartup<TestStartup>();
-        }
-
         protected override void ConfigureWebHost(IWebHostBuilder builder)
         {
             builder
@@ -91,6 +81,17 @@ namespace PlayersWallet.Tests.Services
 
             // Call base Configuration
             base.ConfigureWebHost(builder);
+        }
+
+        protected override IWebHostBuilder CreateWebHostBuilder()
+        {
+            var hostBuilder = new WebHostBuilder()
+                .ConfigureAppConfiguration((context, b) =>
+                {
+                    context.HostingEnvironment.ApplicationName = typeof(Program).Assembly.GetName().Name;
+                })
+                .UseStartup<TestStartup>();
+            return hostBuilder;
         }
     }
 }
